@@ -310,22 +310,28 @@ interface GlobalNavItem {
 /**
  * The compact navigator is intentionally horizontal. Its 16px glyph plus 6px padding
  * on each side makes the collapsed control an exact 28px square, the same box as the
- * header's compose control. Expanding the
- * label only opens the text track, so the artwork and surface never jump.
+ * header's compose control. Expanding the label only opens the text track, so the
+ * artwork and surface never jump.
+ *
+ * The label is a luxury the row affords by width, never by truncation. Five squares and
+ * their gaps cost 148px and the longest label 82px more, so below a 230px row (the default
+ * sidebar's content box) the current page stays a filled square with its tooltip.
  */
+const NAV_LABEL_QUERY = "@min-[230px]:";
 const navPillClasses = (active: boolean) =>
   cn(sidebarSurfaceVariants({ role: "navPill" }), SIDEBAR_ROW_FOCUS_CLASSES, sidebarRowStateClasses(active ? "current" : "idle"));
 
 const NavPillLabel = ({ expanded, label, children }: { expanded: boolean; label: ReactNode; children?: ReactNode }) => (
+  // The control carries its own aria-label; this text is decoration whether or not it is open.
   <span
-    aria-hidden={!expanded || undefined}
+    aria-hidden="true"
     className={cn(
-      "grid min-w-0 transition-[grid-template-columns,padding] duration-200 ease-out motion-reduce:transition-none",
-      expanded ? "grid-cols-[1fr] ps-2.5" : "grid-cols-[0fr] ps-0",
+      "grid min-w-0 grid-cols-[0fr] ps-0 transition-[grid-template-columns,padding] duration-200 ease-out motion-reduce:transition-none",
+      expanded && `${NAV_LABEL_QUERY}grid-cols-[1fr] ${NAV_LABEL_QUERY}ps-2`,
     )}
   >
     <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
-      <span data-sidebar-label className="max-w-[5.5rem] shrink-0 truncate text-[12px]">
+      <span data-sidebar-label className="shrink-0 truncate text-[12px]">
         {label}
       </span>
       {children}
@@ -440,7 +446,7 @@ const GlobalNavigation = () => {
 
   return (
     <TooltipProvider>
-      <nav className={cn("flex h-7 items-center gap-1", SIDEBAR_RAIL_CLASSES)} aria-label="Primary">
+      <nav className={cn("@container flex h-7 items-center gap-0.5", SIDEBAR_RAIL_CLASSES)} aria-label="Primary">
         {currentUser && (
           <DropdownMenu
             onOpenChange={(open, eventDetails) => {
